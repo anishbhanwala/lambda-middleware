@@ -13,15 +13,12 @@ describe("serverTiming", () => {
     ).toMatchObject(response);
   });
 
-  it("returns the handler's response", async () => {
+  it("adds server-timing header to the handler response", async () => {
     const response = {
       statusCode: 200,
       body: "",
     };
     const handler = jest.fn().mockResolvedValue(response);
-    expect(
-      await serverTiming()(handler)(createEvent({}), createContext())
-    ).toMatchObject(response);
 
     const handlerResponse = await serverTiming()(handler)(
       createEvent({}),
@@ -30,6 +27,27 @@ describe("serverTiming", () => {
     expect(handlerResponse).toMatchObject({
       headers: {
         "Server-Timing": "missedCache",
+      },
+    });
+  });
+
+  it("keeps handler response headers", async () => {
+    const response = {
+      statusCode: 200,
+      body: "",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    const handler = jest.fn().mockResolvedValue(response);
+
+    const handlerResponse = await serverTiming()(handler)(
+      createEvent({}),
+      createContext()
+    );
+    expect(handlerResponse).toMatchObject({
+      headers: {
+        "Content-Type": "application/json",
       },
     });
   });
